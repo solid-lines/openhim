@@ -1,11 +1,11 @@
-# OpenHIM Common
+# OpenHIM-docker-compose
 
-1. Edit the `default.json` file to point to the **public** host and port of your server. If you are just testing on localhost you can leave it set at the defaults.
+Run: ./install.sh \<HOSTNAME\>
 
-2. Spin up the OpenHIM core and console easily with docker compose:
-
-```
-docker-compose build && docker-compose up -d
-```
-
-3. Access on localhost:9000 or at <your_server>:9000
+1. Update server
+2. Add the given \<HOSTNAME\> to the configuration files
+3. Build and create docker containers
+4. Update Nginx configuration files
+  
+Activate root login executing ./activatelogin.sh  (Port 8080 has to be open)
+Go to https://\<HOSTNAME\> (root@openhim.org/openhim-password) and change root@openhim.org password
