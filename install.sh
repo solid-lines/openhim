@@ -152,11 +152,11 @@ echo "Installing docker and docker-compose"
 apt update && apt install docker docker-compose jq unzip sendmail -y
 
 echo "Setting hostname: $HOSTNAME"
-cat ./default.json
+cat default.json
 echo "sed -i 's/HOST_NAME/$HOSTNAME/g' ./default.json ./openhim.json ./docker-compose.yml ./activatelogin.sh"
-sed -i 's/HOST_NAME/$HOSTNAME/g' ./default.json ./openhim.json ./docker-compose.yml ./activatelogin.sh
+sed -i 's/HOST_NAME/$HOSTNAME/g' default.json openhim.json docker-compose.yml activatelogin.sh
 sed -i 's/\"host\":\"HOST_NAME\"/\"host\":\"$HOSTNAME\"/g' bundle.js
-cat ./default.json
+cat default.json
 
 echo "Building and creating docker containers"
 if ! docker-compose up --build -d; then
