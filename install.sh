@@ -185,10 +185,9 @@ else
   service nginx start
 fi
 
-if $(grep -l $HOSTNAME /etc/hosts); then
-  echo "Existe"
-elseif
-  echo "No Existe"
+GREP=$(grep -l $HOSTNAME /etc/hosts)
+if [[ $GREP != "/etc/hosts" ]]; then
+  echo "127.0.0.1 $HOSTNAME" >> /etc/hosts
 fi
 
 echo "Successfully installed openhim."
