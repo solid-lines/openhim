@@ -185,6 +185,12 @@ else
   service nginx start
 fi
 
+if $(grep -l $HOSTNAME /etc/hosts); then
+  echo "Existe"
+elseif
+  echo "No Existe"
+fi
+
 echo "Successfully installed openhim."
 echo "Activate root login executing ./activatelogin.sh  (Port 8080 has to be open)"
 echo "Go to https://$HOSTNAME (root@openhim.org/openhim-password) and change root@openhim.org password"
