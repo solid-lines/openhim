@@ -110,7 +110,6 @@ function install_upstream {
                   proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
                   proxy_set_header   X-Forwarded-Host \$server_name;
                 }
-            }
 
                 listen 443 ssl; # managed by Certbot
                 ssl_certificate /etc/letsencrypt/live/$HOSTNAME/fullchain.pem;
