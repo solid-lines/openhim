@@ -183,6 +183,6 @@ else
 fi
 
 echo "Successfully installed openhim."
-echo "Activate root login executing ./activatelogin.sh  (root@openhim.org/openhim-password) and change root@openhim.org password"
-echo "Port 8080 has to be open"
+echo "Activate root login executing ./activatelogin.sh  (Port 8080 has to be open)"
+echo "Go to https://$HOSTNAME (root@openhim.org/openhim-password) and change root@openhim.org password"
 
