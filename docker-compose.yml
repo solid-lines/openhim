@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  mongo:
+    container_name: openhim-mongo
+    ports:
+      - "27017:27017"
+    image: mongo:3.4
+    
+  core:
+    container_name: openhim-core
+    image: jembi/openhim-core:7.0.2
+    environment:
+      - mongo_url=mongodb://mongo/openhim
+      - mongo_atnaUrl=mongodb://mongo/openhim
+    ports:
+      - "8080:8080"
+      - "5000:5000"
+      - "5001:5001"
+      - "5050:5050"
+      - "5051:5051"
+      - "5052:5052"
+      - "7788:7788"
+    volumes:
+        - ./openhim.json:/app/config/default.json
+          #- ./config.md:/app/config/config.md
+        - /etc/letsencrypt/live/HOST_NAME/fullchain.pem:/app/resources/certs/fullchain.pem
+        - /etc/letsencrypt/live/HOST_NAME/privkey.pem:/app/resources/certs/privkey.pem
+    depends_on:
+      - mongo
+  
+  console:
+    container_name: openhim-console
+    image: jembi/openhim-console:1.14.3
+    ports:
+        - "9000:80"
+    volumes:
+      - ./default.json:/usr/share/nginx/html/config/default.json
+      - ./bundle.js:/usr/share/nginx/html/bundle.js    
