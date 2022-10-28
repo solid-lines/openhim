@@ -1,0 +1,62 @@
+<!doctype html><!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]--><!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]--><!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]--><!--[if gt IE 8]><!--><html class="no-js"><!--<![endif]--><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="X-UA-Compatible" content="ie=edge"><title>{{appTitle}}</title><style>.ng-cloak,.x-ng-cloak,[data-ng-cloak],[ng-cloak],[ng\:cloak],[x-ng-cloak]{display:none!important}</style><link href="styles.css" rel="stylesheet">
+<script src="keycloak.js"></script>
+<script>
+const keycloakInitOptions = {
+  onLoad: "login-required",
+  checkLoginIframe: false,
+};
+
+const loadData = function() {
+    if (keycloak.idToken) {
+        const email = document.getElementsByTagName('input')[0];
+        email.value = keycloak.idTokenParsed.email;
+        angular.element(document.getElementsByTagName('input')[0]).scope().loginEmail = email.value;
+        const password = document.getElementsByTagName('input')[1];
+        password.value = "Asturias123";
+        angular.element(document.getElementsByTagName('input')[1]).scope().loginPassword = password.value;
+        const inputclick = document.getElementsByTagName('input')[2];
+        inputclick.click();
+    } else {
+        keycloak.loadUserProfile(function() {
+            accept('Account Service');
+            accept(keycloak.profile.username);
+            accept(keycloak.profile.email);
+            accept(keycloak.profile.firstName + ' ' + keycloak.profile.lastName);
+            accept(keycloak.profile.firstName);
+            accept(keycloak.profile.lastName);
+        }, function() {
+            accept('Failed to retrieve user details. Please enable claims or account role');
+        });
+    }
+};
+const loadFailure = function() {
+     accept('Failed to load data.  Check console log');
+};
+const reloadData = function() {
+    keycloak.updateToken(10)
+            .then((res) => { loadData();})
+            .catch(() => {
+                accept('Failed to load data.  User is logged out.');
+            });
+}
+
+const keycloak = new Keycloak();
+keycloak
+    .init(keycloakInitOptions)
+    .then((res) => { reloadData();})
+    .catch((err) => alert('ERROR: '+err));
+
+function checkLogout() {
+                keycloak.createLogoutUrl = function(options) {
+            return keycloak.endpoints.logout()
+                '?client_id=' + encodeURIComponent(keycloakc.clientId)
+                + '&post_logout_redirect_uri=' + encodeURIComponent('http://www.google.es');
+                };
+                keycloak.logout();
+}
+    </script>
+
+                         </head><body ng-cloak">[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]--><div id="container"><div id="header"><div class="header"><div class="container"><div class="row"><div class="col-md-5 titleDiv"><div class="logo"><h1><a href="#!/transactions"><span class="logo-image"></span> <span class="logo-title">{{appTitle}}</span></a></h1></div></div><div ng-show="navMenuVisible === true"><div class="float-right"><div class="navbar navbar-inverse float-right" role=" banner"><nav class="navbar-collapse bs-navbar-collapse navbar-right" role="navigation"><ul class="nav navbar-nav"><li class="dropdown"><a href="" class="dropdown-toggle" data-toggle="dropdown"><i class="glyphicon glyphicon-user"></i><span ng-bind="sessionUser"></span><b class="caret"></b></a><ul class="dropdown-menu animated fadeInUp"><li><a href="#!/profile">Profile</a></li><li><a href="#!/about">About</a></li><li><a href="#!/logout" onclick="checkLogout(); return false;">Logout</a></li></ul></li></ul></nav></div></div><div class="topMenu float-right"><div class="navbar navbar-inverse" role="banner"><nav class="navbar-collapse bs-navbar-collapse navbar-right" role="navigation"><ul class="nav navbar-nav"><li class="dropdown"><a href="" class="dropdown-toggle" data-toggle="dropdown">Menu<b class="caret"></b></a><ul class="dropdown-menu animated fadeInUp"><li ng-class="{current: isCurrent('/')}"><a href="#"><i class="glyphicon glyphicon-home"></i> Dashboard</a></li><li ng-class="{current: isCurrent('/transactions')}"><a href="#!/transactions"><i class="glyphicon glyphicon-list-alt"></i> Transaction log</a></li><li ng-if="userGroupAdmin" ng-class="{current: isCurrent('/audits')}"><a href="#!/audits"><i class="glyphicon glyphicon-book"></i> Audit log</a></li><li ng-if="userGroupAdmin" ng-class="{current: isCurrent('/clients')}"><a href="#!/clients"><i class="glyphicon glyphicon-th"></i> Clients</a></li><li ng-if="userGroupAdmin" ng-class="{current: isCurrent('/channels')}"><a href="#!/channels"><i class="glyphicon glyphicon-random"></i> Channels</a></li><li ng-if="userGroupAdmin" ng-class="{current: isCurrent('/tasks')}"><a href="#!/tasks"><i class="glyphicon glyphicon-repeat"></i> Tasks</a></li><li ng-if="userGroupAdmin" ng-class="{current: isCurrent('/visualizer')}"><a href="#!/visualizer"><i class="glyphicon glyphicon-road"></i> Visualizer</a></li><li ng-if="userGroupAdmin" ng-class="{current: isCurrent('/groups')}"><a href="#!/groups"><i class="glyphicon glyphicon-tasks"></i> Contact Lists</a></li><li ng-if="userGroupAdmin" ng-class="{current: isCurrent('/mediators')}"><a href="#!/mediators"><i class="glyphicon glyphicon-link"></i> Mediators</a></li><li ng-if="userGroupAdmin" ng-class="{current: isCurrent('/users')}"><a href="#!/users"><i class="glyphicon glyphicon-user"></i> Users</a></li><li ng-if="userGroupAdmin" ng-class="{current: isCurrent('/certificates')}"><a href="#!/certificates"><i class="glyphicon glyphicon-certificate"></i> Certificates</a></li><li ng-if="userGroupAdmin" ng-class="{current: isCurrent('/export-import')}"><a href="#!/export-import"><i class="glyphicon glyphicon-transfer"></i> Export/Import</a></li><li ng-if="userGroupAdmin" ng-class="{current: isCurrent('/logs')}"><a href="#!/logs"><i class="glyphicon glyphicon-cog"></i> Server Logs</a></li></ul></li></ul></nav></div></div></div></div></div></div></div><div id="body" ng-view=""></div><footer><div class="container"><div class="copy text-center">{{appFooterTitle}}<br/>Copyright&nbsp;&copy;&nbsp;<script>document.write((new Date).getFullYear())</script>&nbsp;<a href="http://jembi.org">Jembi Health Systems NPC</a><br/><div><span ng-bind-html="appFooterPoweredBy"></span> <a href="#/about" footer-version></a></div></div></div></footer></div><script>!function(e,a,n,t,g,c,o){e.GoogleAnalyticsObject=g,e.ga=e.ga||function(){(e.ga.q=e.ga.q||[]).push(arguments)},e.ga.l=1*new Date,c=a.createElement(n),o=a.getElementsByTagName(n)[0],c.async=1,c.src="//www.google-analytics.com/analytics.js",o.parentNode.insertBefore(c,o)}(window,document,"script",0,"ga"),ga("create","UA-XXXXX-X"),ga("send","pageview")</script><script src="bundle.js"></script></body></html>
+

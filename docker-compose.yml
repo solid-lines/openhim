@@ -23,7 +23,6 @@ services:
       - "7788:7788"
     volumes:
         - ./openhim.json:/app/config/default.json
-          #- ./config.md:/app/config/config.md
         - /etc/letsencrypt/live/HOST_NAME/fullchain.pem:/app/resources/certs/fullchain.pem
         - /etc/letsencrypt/live/HOST_NAME/privkey.pem:/app/resources/certs/privkey.pem
     depends_on:
@@ -31,9 +30,10 @@ services:
   
   console:
     container_name: openhim-console
-    image: jembi/openhim-console:1.14.3
+    image: jembi/openhim-console:1.14.4
     ports:
         - "9000:80"
     volumes:
       - ./default.json:/usr/share/nginx/html/config/default.json
       - ./bundle.js:/usr/share/nginx/html/bundle.js    
+      - ./index.html:/usr/share/nginx/html/index.html
