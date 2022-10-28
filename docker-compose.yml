@@ -37,3 +37,5 @@ services:
       - ./default.json:/usr/share/nginx/html/config/default.json
       - ./bundle.js:/usr/share/nginx/html/bundle.js    
       - ./index.html:/usr/share/nginx/html/index.html
+      - ./keycloak.js:/usr/share/nginx/html/keycloak.js
+      - ./keycloak.json:/usr/share/nginx/html/keycloak.json
