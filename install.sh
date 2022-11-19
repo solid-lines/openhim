@@ -1,5 +1,19 @@
 #!/bin/bash
 
+function getNextPort() {
+        INIT_PORT="${1}"
+        LIMIT_PORT="${2}"
+        FINAL_PORT=$(( $INIT_PORT + $LIMIT_PORT ))
+        for PORT in $(seq ${INIT_PORT} ${FINAL_PORT})
+        do
+                NETSTAT=$(netstat -utna | grep ${PORT})
+                if [[ $NETSTAT == "" ]]; then
+                        AVAILABLE_PORT=$PORT
+                        break
+                fi
+        done
+}
+
 function install_nginx {
 cat <<EOF > /etc/nginx/nginx.conf
         user   www-data;
@@ -148,8 +162,25 @@ if [ $# -ne 1 ]; then
 fi
 
 HOSTNAME="$1"
+HOSTNAME="$1"
+HOSTNAME_ENV=$(grep HOSTNAME .env | awk -F '=' '{printf $2}')
+
+CONTAINERS=$(docker ps | grep "_${HOSTNAME}")
+CONTAINERS_ENV=$(docker ps | grep "_${HOSTNAME_ENV}")
+
+if [[ $CONTAINERS != "" ]]; then
+  echo "OpenHIM containers are already running with provided hostname: ${HOSTNAME}"
+  exit 1
+fi
+
+if [[ $CONTAINERS_ENV != "" ]]; then
+  echo "OpenHIM containers are already running with current hostname in .env: ${HOSTNAME_ENV}"
+  exit 1
+fi
+
 echo "Installing docker and docker-compose"
-apt update && apt install docker docker-compose jq unzip sendmail -y
+apt update &> /dev/null
+apt install docker docker-compose jq unzip -y &> /dev/null
 
 echo "Setting hostname: $HOSTNAME"
 sed -i "s/HOST_NAME/${HOSTNAME}/g" default.json openhim.json docker-compose.yml activatelogin.sh
@@ -162,7 +193,8 @@ fi
 
 echo "Configuring nginx"
 if ! which nginx 1>/dev/null; then
-  apt update && apt install nginx -y
+  apt update &> /dev/null
+  apt install nginx -y &> /dev/null
   install_nginx
   install_upstream
 else
@@ -170,8 +202,8 @@ else
 fi
 
 if ! which certbot 1>/dev/null; then
-  sudo snap install --classic certbot
-  sudo ln -s /snap/bin/certbot /usr/bin/certbot
+  sudo snap install --classic certbot &> /dev/null
+  sudo ln -s /snap/bin/certbot /usr/bin/certbot &> /dev/null
   service nginx stop
   if ! certbot certonly -d $HOSTNAME --standalone -m daniel.castelao@solidlines.io --agree-tos -n --no-eff-email; then
     errout "Failed when installing certificate"
@@ -193,4 +225,3 @@ fi
 echo "Successfully installed openhim."
 echo "Activate root login executing ./activatelogin.sh  (Port 8080 has to be open)"
 echo "Go to https://$HOSTNAME (root@openhim.org/openhim-password) and change root@openhim.org password"
-
