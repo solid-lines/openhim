@@ -28,9 +28,9 @@ services:
     networks:
       - frontend
     volumes:
-        - ./conf/openhim-core/default.json:/app/config/default.json
-        - /etc/letsencrypt/live/HOST_NAME/fullchain.pem:/app/resources/certs/fullchain.pem
-        - /etc/letsencrypt/live/HOST_NAME/privkey.pem:/app/resources/certs/privkey.pem
+      - ./conf/openhim-core/default.json:/app/config/default.json
+      - /etc/letsencrypt/live/HOST_NAME/fullchain.pem:/app/resources/certs/fullchain.pem
+      - /etc/letsencrypt/live/HOST_NAME/privkey.pem:/app/resources/certs/privkey.pem
     depends_on:
       - mongo
   
@@ -40,12 +40,12 @@ services:
     hostname: openhim-console_${HOSTNAME:-localhost}
     restart: always
     ports:
-        - "${OPENHIM_CONSOLERE_EXPOSED_PORT:-9000}:80"
+      - "${OPENHIM_CONSOLE_EXPOSED_PORT:-9000}:80"
     networks:
       - frontend
     volumes:
-      - ./default.json:/usr/share/nginx/html/config/default.json
-      #- ./bundle.js:/usr/share/nginx/html/bundle.js 
+      - ./conf/openhim-console/default.json:/usr/share/nginx/html/config/default.json
+      #- ./conf/openhim-console/bundle.js:/usr/share/nginx/html/bundle.js 
       # Keycloak
       #- ./index.html:/usr/share/nginx/html/index.html
       #- ./keycloak.js:/usr/share/nginx/html/keycloak.js
