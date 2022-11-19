@@ -21,13 +21,15 @@ services:
       - mongo_url=mongodb://mongo/openhim
       - mongo_atnaUrl=mongodb://mongo/openhim
     ports:
-      - "8080:8080"
+      - "${OPENHIM_CORE_EXPOSED_PORT:-8080}:8080"
       - "5000:5000"
       - "5001:5001"
       - "5050:5050"
       - "5051:5051"
       - "5052:5052"
       - "7788:7788"
+    networks:
+      - frontend
     volumes:
         - ./openhim.json:/app/config/default.json
         - /etc/letsencrypt/live/HOST_NAME/fullchain.pem:/app/resources/certs/fullchain.pem
@@ -37,17 +39,25 @@ services:
   
   console:
     container_name: openhim-console_${HOSTNAME:-localhost}
+    image: jembi/openhim-console:${OPENHIM_CONSOLE_VERSION:-1.14.3}
+    hostname: openhim-console_${HOSTNAME:-localhost}
     restart: always
-    image: jembi/openhim-console:1.14.3
     ports:
-        - "9000:80"
+        - "${OPENHIM_CONSOLERE_EXPOSED_PORT:-9000}:80"
+    networks:
+      - frontend
     volumes:
       - ./default.json:/usr/share/nginx/html/config/default.json
-      - ./bundle.js:/usr/share/nginx/html/bundle.js    
+      - ./bundle.js:/usr/share/nginx/html/bundle.js 
+      # Keycloak
       #- ./index.html:/usr/share/nginx/html/index.html
       #- ./keycloak.js:/usr/share/nginx/html/keycloak.js
       #- ./keycloak.json:/usr/share/nginx/html/keycloak.json
- 
+
+volumes:
+  mongo:
+    driver: local
+    
 networks:
   frontend:
     name: network_${HOSTNAME:-localhost}
