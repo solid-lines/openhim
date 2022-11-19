@@ -1,19 +1,22 @@
-version: '3'
-
+version: '3.7'
 services:
   mongo:
-    container_name: openhim-mongo
+    container_name: openhim-mongo_${HOSTNAME:-localhost}
+    image: mongo:${MONGO_VERSION:-3.4}
+    hostname: mongo_${HOSTNAME:-localhost}
     restart: always
     ports:
-      - "27017:27017"
-    image: mongo:3.4
+      - "${MONGO_EXPOSED_PORT:-27017}:27017"
+    networks:
+      - frontend
     volumes:
       - ./data:/data/db
     
   core:
-    container_name: openhim-core
+    container_name: openhim-core_${HOSTNAME:-localhost}
+    image: jembi/openhim-core:${OPENHIM_CORE_VERSION:-7.0.2}
+    hostname: openhim-core_${HOSTNAME:-localhost}
     restart: always
-    image: jembi/openhim-core:7.0.2
     environment:
       - mongo_url=mongodb://mongo/openhim
       - mongo_atnaUrl=mongodb://mongo/openhim
@@ -33,7 +36,7 @@ services:
       - mongo
   
   console:
-    container_name: openhim-console
+    container_name: openhim-console_${HOSTNAME:-localhost}
     restart: always
     image: jembi/openhim-console:1.14.3
     ports:
@@ -44,3 +47,8 @@ services:
       #- ./index.html:/usr/share/nginx/html/index.html
       #- ./keycloak.js:/usr/share/nginx/html/keycloak.js
       #- ./keycloak.json:/usr/share/nginx/html/keycloak.json
+ 
+networks:
+  frontend:
+    name: network_${HOSTNAME:-localhost}
+    driver: bridge
