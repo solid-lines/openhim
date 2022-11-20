@@ -184,32 +184,6 @@ if [[ $CONTAINERS_ENV != "" ]]; then
   exit 1
 fi
 
-#Configure OpenHIM-core
-OPENHIM_CORE_VERSION=$(grep OPENHIM_CORE_VERSION .env | awk -F '=' '{printf $2}')
-mkdir -p ./conf/openhim-core
-wget https://raw.githubusercontent.com/jembi/openhim-core-js/v${OPENHIM_CORE_VERSION}/config/default.json -O ./conf/openhim-core/default.json &> /dev/null
-LOGGER_LEVEL=$(grep LOGGER_LEVEL .env | awk -F '=' '{printf $2}')
-jq -r --arg LOGGER "$LOGGER_LEVEL" '.logger.level = $LOGGER' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
-jq -r --arg HOST "$HOSTNAME" '.router.externalHostname = $HOST' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
-jq -r '.certificateManagement.watchFSForCert = true' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
-jq -r '.certificateManagement.certPath = "/app/resources/certs/fullchain.pem"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
-jq -r '.certificateManagement.keyPath = "/app/resources/certs/privkey.pem"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
-
-#Configure OpenHIM-console
-OPENHIM_CONSOLE_VERSION=$(grep OPENHIM_CONSOLE_VERSION .env | awk -F '=' '{printf $2}')
-mkdir -p ./conf/openhim-console
-wget https://raw.githubusercontent.com/jembi/openhim-console/v${OPENHIM_CONSOLE_VERSION}/app/config/default.json -O ./conf/openhim-console/default.json &> /dev/null
-jq -r --arg HOST "$HOSTNAME" '.host = $HOST' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
-jq -r '.hostPath = "api"' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
-jq -r '.port = 443' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
-
-echo "Installing docker and docker-compose"
-apt update &> /dev/null
-apt install docker docker-compose jq unzip -y &> /dev/null
-
-echo "Setting hostname: $HOSTNAME"
-sed -i "s/HOST_NAME/${HOSTNAME}/g" ./docker-compose.yml .env ./activatelogin.sh
-
 # Change exposed port to the next available one. Parameters: Initial Port and Limit Port
 OPENHIM_CORE_API_EXPOSED_PORT=$(grep OPENHIM_CORE_API_EXPOSED_PORT .env | awk -F '=' '{printf $2}')
 getNextPort "$OPENHIM_CORE_API_EXPOSED_PORT" "1000"
@@ -246,6 +220,32 @@ getNextPort "$MONGO_EXPOSED_PORT" "1000"
 sed -i "s/MONGO_EXPOSED_PORT=$MONGO_EXPOSED_PORT/MONGO_EXPOSED_PORT=$AVAILABLE_PORT/g" .env
 echo "Mongo docker service will be exposed on port: $AVAILABLE_PORT"
 MONGO_EXPOSED_PORT=$AVAILABLE_PORT
+
+#Configure OpenHIM-core
+OPENHIM_CORE_VERSION=$(grep OPENHIM_CORE_VERSION .env | awk -F '=' '{printf $2}')
+mkdir -p ./conf/openhim-core
+wget https://raw.githubusercontent.com/jembi/openhim-core-js/v${OPENHIM_CORE_VERSION}/config/default.json -O ./conf/openhim-core/default.json &> /dev/null
+LOGGER_LEVEL=$(grep LOGGER_LEVEL .env | awk -F '=' '{printf $2}')
+jq -r --arg LOGGER "$LOGGER_LEVEL" '.logger.level = $LOGGER' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq -r --arg HOST "$HOSTNAME" '.router.externalHostname = $HOST' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq -r '.certificateManagement.watchFSForCert = true' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq -r '.certificateManagement.certPath = "/app/resources/certs/fullchain.pem"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq -r '.certificateManagement.keyPath = "/app/resources/certs/privkey.pem"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+
+#Configure OpenHIM-console
+OPENHIM_CONSOLE_VERSION=$(grep OPENHIM_CONSOLE_VERSION .env | awk -F '=' '{printf $2}')
+mkdir -p ./conf/openhim-console
+wget https://raw.githubusercontent.com/jembi/openhim-console/v${OPENHIM_CONSOLE_VERSION}/app/config/default.json -O ./conf/openhim-console/default.json &> /dev/null
+jq -r --arg HOST "$HOSTNAME" '.host = $HOST' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
+jq -r '.hostPath = "api"' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
+jq -r '.port = 443' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
+
+echo "Installing docker and docker-compose"
+apt update &> /dev/null
+apt install docker docker-compose jq unzip -y &> /dev/null
+
+echo "Setting hostname: $HOSTNAME"
+sed -i "s/HOST_NAME/${HOSTNAME}/g" ./docker-compose.yml .env ./activatelogin.sh
 
 echo "Configuring nginx"
 if ! which nginx 1>/dev/null; then
@@ -284,6 +284,7 @@ fi
 
 #Update bundle.js
 docker exec -ti $(docker container ls | grep openhim-console_openhim2.training.solidlines.io | awk '{printf $1}') sed -i "s/\"host\":\"localhost\"/\"host\":\"${HOSTNAME}\"/g" /usr/share/nginx/html/bundle.js
+docker exec -ti $(docker container ls | grep openhim-console_openhim2.training.solidlines.io | awk '{printf $1}') sed -i "s/\"port\":8080/\"port\":${OPENHIM_CORE_API_EXPOSED_PORT}/g" /usr/share/nginx/html/bundle.js
 
 echo "Successfully installed openhim."
 echo "Activate root login executing ./activatelogin.sh  (Port 8080 has to be open)"
