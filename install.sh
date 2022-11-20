@@ -189,19 +189,19 @@ OPENHIM_CORE_VERSION=$(grep OPENHIM_CORE_VERSION .env | awk -F '=' '{printf $2}'
 mkdir -p ./conf/openhim-core
 wget https://raw.githubusercontent.com/jembi/openhim-core-js/v${OPENHIM_CORE_VERSION}/config/default.json -O ./conf/openhim-core/default.json &> /dev/null
 LOGGER_LEVEL=$(grep LOGGER_LEVEL .env | awk -F '=' '{printf $2}')
-jq --arg LOGGER_LEVEL $LOGGER_LEVEL '.logger.level = "LOGGER_LEVEL"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
-jq --arg HOSTNAME $HOSTNAME '.router.externalHostname = "HOSTNAME"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
-jq '.certificateManagement.watchFSForCert = true' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
-jq '.certificateManagement.certPath = "/app/resources/certs/fullchain.pem"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
-jq '.certificateManagement.keyPath = "/app/resources/certs/privkey.pem"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq -r --arg LOGGER_LEVEL $LOGGER_LEVEL '.logger.level = "$LOGGER_LEVEL"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq -r --arg HOSTNAME $HOSTNAME '.router.externalHostname = "$HOSTNAME"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq -r '.certificateManagement.watchFSForCert = true' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq -r '.certificateManagement.certPath = "/app/resources/certs/fullchain.pem"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq -r '.certificateManagement.keyPath = "/app/resources/certs/privkey.pem"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
 
 #Configure OpenHIM-console
 OPENHIM_CONSOLE_VERSION=$(grep OPENHIM_CONSOLE_VERSION .env | awk -F '=' '{printf $2}')
 mkdir -p ./conf/openhim-console
 wget https://raw.githubusercontent.com/jembi/openhim-console/v${OPENHIM_CONSOLE_VERSION}/app/config/default.json -O ./conf/openhim-console/default.json &> /dev/null
-jq --arg HOSTNAME $HOSTNAME '.host = "HOSTNAME"' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
-jq '.hostPath = "api"' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
-jq '.port = 443' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
+jq -r --arg HOSTNAME $HOSTNAME '.host = "$HOSTNAME"' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
+jq -r '.hostPath = "api"' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
+jq -r '.port = 443' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
 
 echo "Installing docker and docker-compose"
 apt update &> /dev/null
