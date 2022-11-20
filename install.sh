@@ -282,6 +282,9 @@ if ! docker-compose up --build -d; then
   errout "Failed docker-compose" 1>&2
 fi
 
+#Update bundle.js
+docker exec -ti $(docker container ls | grep openhim-console_openhim2.training.solidlines.io | awk '{printf $1}') sed -i "s/\"host\":\"localhost\"/\"host\":\"${HOSTNAME}\"/g" /usr/share/nginx/html/bundle.js
+
 echo "Successfully installed openhim."
 echo "Activate root login executing ./activatelogin.sh  (Port 8080 has to be open)"
 echo "Go to https://$HOSTNAME (root@openhim.org/openhim-password) and change root@openhim.org password"
