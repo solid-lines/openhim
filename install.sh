@@ -262,6 +262,7 @@ if ! which nginx 1>/dev/null; then
 else
   install_upstream
 fi
+service nginx restart
 
 if ! which certbot 1>/dev/null; then
   sudo snap install --classic certbot &> /dev/null
