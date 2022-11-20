@@ -67,7 +67,7 @@ types_hash_max_size   2048;
 client_max_body_size  20M;
 client_body_timeout 10;
 client_header_timeout 10;
-large_client_header_buffers 2 1k;
+large_client_header_buffers 8 16k;
 EOF
 
 cat <<EOF > /etc/nginx/conf.d/gzip.conf
@@ -114,12 +114,20 @@ EOF
 
 function install_upstream {
         mkdir -p /etc/nginx/upstream
-        cat <<EOF > /etc/nginx/upstream/openhim.conf
+        cat <<EOF > /etc/nginx/upstream/${HOSTNAME}.conf
           server {
                 server_name  $HOSTNAME;
                 location / {
-                  proxy_pass        http://localhost:9000;
-              proxy_set_header   Host \$host;
+                  proxy_pass        http://localhost:${OPENHIM_CONSOLE_EXPOSED_PORT};
+                  proxy_set_header   Host \$host;
+                  proxy_set_header   X-Real-IP \$remote_addr;
+                  proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
+                  proxy_set_header   X-Forwarded-Host \$server_name;
+                }
+				
+				location /api/ {
+                  proxy_pass        http://localhost:${OPENHIM_CORE_API_EXPOSED_PORT};
+                  proxy_set_header   Host \$host;
                   proxy_set_header   X-Real-IP \$remote_addr;
                   proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
                   proxy_set_header   X-Forwarded-Host \$server_name;
@@ -150,9 +158,8 @@ function errout {
   echo "ERROR: $*, exiting..." >&2
   echo "========================================================="
   docker-compose down
-  sed -i "s/$HOSTNAME/HOST_NAME/g" openhim.json default.json docker-compose.yml
-  sed -i 's/\"host\":\"$HOSTNAME\"/\"host\":\"HOST_NAME\"/g' bundle.js
-  rm -rf /etc/nginx/upstream/openhim.conf
+  sed -i "s/$HOSTNAME/HOST_NAME/g" ./docker-compose.yml .env ./activatelogin.sh
+  rm -rf /etc/nginx/upstream/${HOSTNAME}.conf
   exit 1
 }
 
@@ -161,7 +168,6 @@ if [ $# -ne 1 ]; then
         exit 1
 fi
 
-HOSTNAME="$1"
 HOSTNAME="$1"
 HOSTNAME_ENV=$(grep HOSTNAME .env | awk -F '=' '{printf $2}')
 
@@ -178,13 +184,67 @@ if [[ $CONTAINERS_ENV != "" ]]; then
   exit 1
 fi
 
+#Configure OpenHIM-core
+OPENHIM_CORE_VERSION=$(grep OPENHIM_CORE_VERSION .env | awk -F '=' '{printf $2}')
+wget https://raw.githubusercontent.com/jembi/openhim-core-js/v${OPENHIM_CORE_VERSION}/config/default.json -O ./conf/openhim-core/default.json &> /dev/null
+LOGGER_LEVEL=$(grep LOGGER_LEVEL .env | awk -F '=' '{printf $2}')
+jq '.logger.level = "${LOGGER_LEVEL"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq '.router.externalHostname = "${HOSTNAME}"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq '.certificateManagement.watchFSForCert = true' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq '.certificateManagement.certPath = "/app/resources/certs/fullchain.pem"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+jq '.certificateManagement.keyPath = "/app/resources/certs/privkey.pem"' ./conf/openhim-core/default.json > ./conf/openhim-core/default.tmp && mv ./conf/openhim-core/default.tmp ./conf/openhim-core/default.json
+
+#Configure OpenHIM-console
+OPENHIM_CONSOLE_VERSION=$(grep OPENHIM_CONSOLE_VERSION .env | awk -F '=' '{printf $2}')
+wget https://raw.githubusercontent.com/jembi/openhim-console/v${OPENHIM_CONSOLE_VERSION}/app/config/default.json -O ./conf/openhim-console/default.json &> /dev/null
+jq '.host = "${HOSTNAME}"' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
+jq '.hostPath = "api"' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
+jq '.port = 443' ./conf/openhim-console/default.json > ./conf/openhim-console/default.tmp && mv ./conf/openhim-console/default.tmp ./conf/openhim-console/default.json
+
 echo "Installing docker and docker-compose"
 apt update &> /dev/null
 apt install docker docker-compose jq unzip -y &> /dev/null
 
 echo "Setting hostname: $HOSTNAME"
-sed -i "s/HOST_NAME/${HOSTNAME}/g" default.json openhim.json docker-compose.yml activatelogin.sh
-sed -i "s/\"host\":\"HOST_NAME\"/\"host\":\"${HOSTNAME}\"/g" bundle.js
+sed -i "s/HOST_NAME/${HOSTNAME}/g" ./docker-compose.yml .env ./activatelogin.sh
+
+# Change exposed port to the next available one. Parameters: Initial Port and Limit Port
+OPENHIM_CORE_API_EXPOSED_PORT=$(grep OPENHIM_CORE_API_EXPOSED_PORT .env | awk -F '=' '{printf $2}')
+getNextPort "$OPENHIM_CORE_API_EXPOSED_PORT" "1000"
+sed -i "s/OPENHIM_CORE_API_EXPOSED_PORT=$OPENHIM_CORE_API_EXPOSED_PORT/OPENHIM_CORE_API_EXPOSED_PORT=$AVAILABLE_PORT/g" .env
+echo "OpenHIM-core API docker service will be exposed on port: $AVAILABLE_PORT"
+OPENHIM_CORE_API_EXPOSED_PORT=$AVAILABLE_PORT
+
+OPENHIM_CORE_HTTPS_EXPOSED_PORT=$(grep OPENHIM_CORE_HTTPS_EXPOSED_PORT .env | awk -F '=' '{printf $2}')
+getNextPort "$OPENHIM_CORE_HTTPS_EXPOSED_PORT" "1000"
+sed -i "s/OPENHIM_CORE_HTTPS_EXPOSED_PORT=$OPENHIM_CORE_HTTPS_EXPOSED_PORT/OPENHIM_CORE_HTTPS_EXPOSED_PORT=$AVAILABLE_PORT/g" .env
+echo "OpenHIM-core HTTPS docker service will be exposed on port: $AVAILABLE_PORT"
+OPENHIM_CORE_HTTPS_EXPOSED_PORT=$AVAILABLE_PORT
+
+OPENHIM_CORE_HTTP_EXPOSED_PORT=$(grep OPENHIM_CORE_HTTP_EXPOSED_PORT .env | awk -F '=' '{printf $2}')
+getNextPort "$OPENHIM_CORE_HTTP_EXPOSED_PORT" "1000"
+sed -i "s/OPENHIM_CORE_HTTP_EXPOSED_PORT=$OPENHIM_CORE_HTTP_EXPOSED_PORT/OPENHIM_CORE_HTTP_EXPOSED_PORT=$AVAILABLE_PORT/g" .env
+echo "OpenHIM-core HTTP docker service will be exposed on port: $AVAILABLE_PORT"
+OPENHIM_CORE_HTTP_EXPOSED_PORT=$AVAILABLE_PORT
+
+OPENHIM_CORE_POOLING_EXPOSED_PORT=$(grep OPENHIM_CORE_POOLING_EXPOSED_PORT .env | awk -F '=' '{printf $2}')
+getNextPort "$OPENHIM_CORE_POOLING_EXPOSED_PORT" "1000"
+sed -i "s/OPENHIM_CORE_POOLING_EXPOSED_PORT=$OPENHIM_CORE_POOLING_EXPOSED_PORT/OPENHIM_CORE_POOLING_EXPOSED_PORT=$AVAILABLE_PORT/g" .env
+echo "OpenHIM-core Pooling docker service will be exposed on port: $AVAILABLE_PORT"
+OPENHIM_CORE_POOLING_EXPOSED_PORT=$AVAILABLE_PORT
+
+OPENHIM_CONSOLE_EXPOSED_PORT=$(grep OPENHIM_CONSOLE_EXPOSED_PORT .env | awk -F '=' '{printf $2}')
+getNextPort "$OPENHIM_CONSOLE_EXPOSED_PORT" "1000"
+sed -i "s/OPENHIM_CONSOLE_EXPOSED_PORT=$OPENHIM_CONSOLE_EXPOSED_PORT/OPENHIM_CONSOLE_EXPOSED_PORT=$AVAILABLE_PORT/g" .env
+echo "OpenHIM-console docker service will be exposed on port: $AVAILABLE_PORT"
+OPENHIM_CONSOLE_EXPOSED_PORT=$AVAILABLE_PORT
+
+MONGO_EXPOSED_PORT=$(grep MONGO_EXPOSED_PORT .env | awk -F '=' '{printf $2}')
+getNextPort "$MONGO_EXPOSED_PORT" "1000"
+sed -i "s/MONGO_EXPOSED_PORT=$MONGO_EXPOSED_PORT/MONGO_EXPOSED_PORT=$AVAILABLE_PORT/g" .env
+echo "Mongo docker service will be exposed on port: $AVAILABLE_PORT"
+MONGO_EXPOSED_PORT=$AVAILABLE_PORT
+
 
 echo "Building and creating docker containers"
 if ! docker-compose up --build -d; then
@@ -225,3 +285,4 @@ fi
 echo "Successfully installed openhim."
 echo "Activate root login executing ./activatelogin.sh  (Port 8080 has to be open)"
 echo "Go to https://$HOSTNAME (root@openhim.org/openhim-password) and change root@openhim.org password"
+
