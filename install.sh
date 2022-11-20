@@ -247,12 +247,6 @@ sed -i "s/MONGO_EXPOSED_PORT=$MONGO_EXPOSED_PORT/MONGO_EXPOSED_PORT=$AVAILABLE_P
 echo "Mongo docker service will be exposed on port: $AVAILABLE_PORT"
 MONGO_EXPOSED_PORT=$AVAILABLE_PORT
 
-
-echo "Building and creating docker containers"
-if ! docker-compose up --build -d; then
-  errout "Failed docker-compose" 1>&2
-fi
-
 echo "Configuring nginx"
 if ! which nginx 1>/dev/null; then
   apt update &> /dev/null
@@ -281,6 +275,11 @@ fi
 GREP=$(grep -l $HOSTNAME /etc/hosts)
 if [[ $GREP != "/etc/hosts" ]]; then
   echo "127.0.0.1 $HOSTNAME" >> /etc/hosts
+fi
+
+echo "Building and creating docker containers"
+if ! docker-compose up --build -d; then
+  errout "Failed docker-compose" 1>&2
 fi
 
 echo "Successfully installed openhim."
