@@ -258,11 +258,7 @@ if ! which nginx 1>/dev/null; then
   apt update &> /dev/null
   apt install nginx -y &> /dev/null
   install_nginx
-  install_upstream
-else
-  install_upstream
 fi
-service nginx restart
 
 if ! which certbot 1>/dev/null; then
   sudo snap install --classic certbot &> /dev/null
@@ -271,12 +267,14 @@ if ! which certbot 1>/dev/null; then
   if ! certbot certonly -d $HOSTNAME --standalone -m daniel.castelao@solidlines.io --agree-tos -n --no-eff-email; then
     errout "Failed when installing certificate"
   fi
+  install_upstream
   service nginx start
 else
   service nginx stop
   if ! certbot certonly -d $HOSTNAME --standalone -m daniel.castelao@solidlines.io --agree-tos -n --no-eff-email; then
     errout "Failed when installing certificate"
   fi
+  install_upstream
   service nginx start
 fi
 
