@@ -283,8 +283,8 @@ if ! docker-compose up --build -d; then
 fi
 
 #Update bundle.js
-docker exec -ti $(docker container ls | grep openhim-console_openhim2.training.solidlines.io | awk '{printf $1}') sed -i "s/\"host\":\"localhost\"/\"host\":\"${HOSTNAME}\"/g" /usr/share/nginx/html/bundle.js
-docker exec -ti $(docker container ls | grep openhim-console_openhim2.training.solidlines.io | awk '{printf $1}') sed -i "s/\"port\":8080/\"port\":${OPENHIM_CORE_API_EXPOSED_PORT}/g" /usr/share/nginx/html/bundle.js
+docker exec -ti $(docker container ls | grep openhim-console_${HOSTNAME} | awk '{printf $1}') sed -i "s/\"host\":\"localhost\"/\"host\":\"${HOSTNAME}\"/g" /usr/share/nginx/html/bundle.js
+docker exec -ti $(docker container ls | grep openhim-console_${HOSTNAME} | awk '{printf $1}') sed -i "s/\"port\":8080/\"port\":${OPENHIM_CORE_API_EXPOSED_PORT}/g" /usr/share/nginx/html/bundle.js
 
 echo "Successfully installed openhim."
 echo "Activate root login executing ./activatelogin.sh  (Port 8080 has to be open)"
