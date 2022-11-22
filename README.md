@@ -29,7 +29,7 @@ Run: ./install.sh \<HOSTNAME\>
 3. `./restart_containers.sh`
 
 ## .env file settings
-### Set up the OpenHIM-core, OpenHIM-console and MongoDB version
+### Set up the OpenHIM-core, OpenHIM-console and MongoDB versions
 * OPENHIM_CORE_VERSION (default is 7.0.2)
 * OPENHIM_CONSOLE_VERSION (default is 1.14.3)
 * MONGO_VERSION (default is 3.4)
