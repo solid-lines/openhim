@@ -171,8 +171,8 @@ fi
 HOSTNAME="$1"
 HOSTNAME_ENV=$(grep HOSTNAME .env | awk -F '=' '{printf $2}')
 
-CONTAINERS=$(docker ps | grep "_${HOSTNAME}")
-CONTAINERS_ENV=$(docker ps | grep "_${HOSTNAME_ENV}")
+CONTAINERS=$(docker ps | grep "openhim-core_${HOSTNAME}")
+CONTAINERS_ENV=$(docker ps | grep "openhim-core_${HOSTNAME_ENV}")
 
 if [[ $CONTAINERS != "" ]]; then
   echo "OpenHIM containers are already running with provided hostname: ${HOSTNAME}"
