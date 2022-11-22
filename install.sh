@@ -125,8 +125,16 @@ function install_upstream {
                   proxy_set_header   X-Forwarded-Host \$server_name;
                 }
 				
-				location /api/ {
-                  proxy_pass        http://localhost:${OPENHIM_CORE_API_EXPOSED_PORT};
+		location /api/ {
+                  proxy_pass        http://localhost:${OPENHIM_CORE_API_EXPOSED_PORT}/;
+                  proxy_set_header   Host \$host;
+                  proxy_set_header   X-Real-IP \$remote_addr;
+                  proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
+                  proxy_set_header   X-Forwarded-Host \$server_name;
+                }
+		
+		location /authenticate/ {
+                  proxy_pass        http://localhost:${OPENHIM_CORE_API_EXPOSED_PORT}/authenticate/;
                   proxy_set_header   Host \$host;
                   proxy_set_header   X-Real-IP \$remote_addr;
                   proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
