@@ -126,7 +126,7 @@ function install_upstream {
                 }
 				
 		location /api/ {
-                  proxy_pass        http://localhost:${OPENHIM_CORE_API_EXPOSED_PORT}/;
+                  proxy_pass        https://localhost:${OPENHIM_CORE_API_EXPOSED_PORT}/;
                   proxy_set_header   Host \$host;
                   proxy_set_header   X-Real-IP \$remote_addr;
                   proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -134,7 +134,7 @@ function install_upstream {
                 }
 		
 		location /authenticate/ {
-                  proxy_pass        http://localhost:${OPENHIM_CORE_API_EXPOSED_PORT}/authenticate/;
+                  proxy_pass        https://localhost:${OPENHIM_CORE_API_EXPOSED_PORT}/authenticate/;
                   proxy_set_header   Host \$host;
                   proxy_set_header   X-Real-IP \$remote_addr;
                   proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -295,6 +295,8 @@ docker exec -ti $(docker container ls | grep openhim-console_${HOSTNAME} | awk '
 docker exec -ti $(docker container ls | grep openhim-console_${HOSTNAME} | awk '{printf $1}') sed -i "s/\"port\":8080/\"port\":${OPENHIM_CORE_API_EXPOSED_PORT}/g" /usr/share/nginx/html/bundle.js
 
 echo "Successfully installed openhim."
-echo "Activate root login executing ./activatelogin.sh  (Port 8080 has to be open)"
+echo ""
+echo "Go to https://$HOSTNAME//authenticate/root@openhim.org  to activate root login"
+echo ""
 echo "Go to https://$HOSTNAME (root@openhim.org/openhim-password) and change root@openhim.org password"
 
