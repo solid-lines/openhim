@@ -296,7 +296,7 @@ docker exec -ti $(docker container ls | grep openhim-console_${HOSTNAME} | awk '
 
 echo "Successfully installed openhim."
 echo ""
-echo "Go to https://$HOSTNAME//authenticate/root@openhim.org  to activate root login"
+echo "Go to https://$HOSTNAME/authenticate/root@openhim.org  to activate root login"
 echo ""
 echo "Go to https://$HOSTNAME (root@openhim.org/openhim-password) and change root@openhim.org password"
 
