@@ -47,9 +47,9 @@ services:
       - ./conf/openhim-console/default.json:/usr/share/nginx/html/config/default.json
       #- ./conf/openhim-console/bundle.js:/usr/share/nginx/html/bundle.js 
       # Keycloak
-      #- ./index.html:/usr/share/nginx/html/index.html
-      #- ./keycloak.js:/usr/share/nginx/html/keycloak.js
-      #- ./keycloak.json:/usr/share/nginx/html/keycloak.json
+      #- ./conf/keycloak/index.html:/usr/share/nginx/html/index.html
+      #- ./conf/keycloak/keycloak.js:/usr/share/nginx/html/keycloak.js
+      #- ./conf/keycloak/keycloak.json:/usr/share/nginx/html/keycloak.json
 
 volumes:
   mongo:
