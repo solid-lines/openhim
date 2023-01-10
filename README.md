@@ -9,7 +9,6 @@ All the commands are assuming that the target installation folder for OpenHIM is
 5. `./install.sh HOSTNAME`
 6. Go to https://HOSTNAME/authenticate/root@openhim.org  to activate root login
 7. Go to https://HOSTNAME (root@openhim.org / openhim-password) and change root@openhim.org password
-8. You can create a superuser running the script `./createsuperuser.sh`
 
 
 Run: ./install.sh \<HOSTNAME\>
