@@ -12,7 +12,7 @@ const loadData = function() {
         email.value = keycloak.idTokenParsed.email;
         angular.element(document.getElementsByTagName('input')[0]).scope().loginEmail = email.value;
         const password = document.getElementsByTagName('input')[1];
-        password.value = "Asturias123";
+        password.value = keycloak.idTokenParsed.password;
         angular.element(document.getElementsByTagName('input')[1]).scope().loginPassword = password.value;
         const inputclick = document.getElementsByTagName('input')[2];
         inputclick.click();
